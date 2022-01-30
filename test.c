@@ -1,10 +1,25 @@
-int a = 6;
-int b = 3;
+/*comment test*/
+"Litera"
+/* multiline
+comment */
 
-float c = 2.6;
+int main() {
+    if else while (/* condition */)
+    {
+        /* code */
+    }
+    float int char break continue float void
+    + - * / % && || &*=
+void func is 
+unknown # \ |+
+123 /* asdfjas; */ temp
+12.56
+wum
+printf("This is a literal test\n");
+average
+ten.twenty
+() {} [] , ; . == != < <= > >= 
+=*-/"Test lit no.two" 
+    
+}
 
-int main(){
-if(c > 2 && a > 4){
-    int z = a + b;
-}
-}
