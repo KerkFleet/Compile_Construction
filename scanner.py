@@ -91,11 +91,17 @@ class scanner:
             self.processSingleToken()
         self.getAttributes()
 
-    '''Processes a word token and sets scanner.token = symbol.idt'''
+    '''Processes a word token and sets self.token'''
     def processWordToken(self):
+        counter = 0
         while self.ch.isalnum() or self.ch == '_':
             self.lexeme = self.lexeme + self.ch
             self.getNextCh()
+            counter = counter + 1
+            if counter == 28:
+                self.token = symbol.UNKNOWN
+                print("Identifier must be 27 characters or less")
+                return
         for sym in islice(symbol, symbol.voidt+1):
             if self.resword[sym] == self.lexeme:
                 self.token = sym
@@ -129,7 +135,8 @@ class scanner:
                 self.lineNum = self.lineNum + 1
         if not self.ch:
             print("ERROR: Opening '/*' has no matching '*/'")
-            exit()
+            self.token = symbol.UNKNOWN
+            return
         self.getNextCh()
         self.getNextToken()
 
@@ -202,9 +209,10 @@ class scanner:
             self.getNextCh()
             if not self.ch:
                 print("ERROR: Literal has no closing quotation")
-                exit()
+                self.token = symbol.UNKNOWN
+                return
         self.literal = lit
-        self.lexeme = self.literal[:10]
+        self.lexeme = self.literal[:27]
         self.getNextCh()
 
     '''Displays current line number, token, lexeme, and associated attributes if they exist'''
