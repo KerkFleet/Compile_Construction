@@ -115,7 +115,13 @@ class scanner:
             self.lexeme = self.lexeme + self.ch
             if(self.ch == '.'):
                 dec = True
+                self.getNextCh()
+                break
             self.getNextCh()
+        if dec:
+            while self.ch.isnumeric():
+                self.lexeme = self.lexeme + self.ch
+                self.getNextCh()
         self.token = symbol.numt
         if(dec):
             self.value = float(self.lexeme)
