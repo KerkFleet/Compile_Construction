@@ -94,14 +94,17 @@ class scanner:
     '''Processes a word token and sets self.token'''
     def processWordToken(self):
         counter = 1
+        too_large = False
         while self.ch.isalnum() or self.ch == '_':
             self.lexeme = self.lexeme + self.ch
             self.getNextCh()
             counter = counter + 1
-            if counter > 27:
+            if counter == 28:
+                too_large = True
                 self.token = symbol.UNKNOWN
                 print("Identifier must be 27 characters or less")
-                return
+        if too_large:
+            return
         for sym in islice(symbol, symbol.voidt+1):
             if self.resword[sym] == self.lexeme:
                 self.token = sym

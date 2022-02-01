@@ -11,7 +11,8 @@ int main() {
     float int char break continue float void
     + - * / % && || &*=
 void func is 
-abcdefghijklmnopqrstuvwxyz1234 # \ |+
+abcdefghijklmno_qrstuvwxyz1 # \ |+
+abcdefghijklmno_qrstuvwxyz123456
 123 /* asdfjas; */ temp
 12.56.78
 0.23
