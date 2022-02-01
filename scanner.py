@@ -93,12 +93,12 @@ class scanner:
 
     '''Processes a word token and sets self.token'''
     def processWordToken(self):
-        counter = 0
+        counter = 1
         while self.ch.isalnum() or self.ch == '_':
             self.lexeme = self.lexeme + self.ch
             self.getNextCh()
             counter = counter + 1
-            if counter == 28:
+            if counter > 27:
                 self.token = symbol.UNKNOWN
                 print("Identifier must be 27 characters or less")
                 return
@@ -217,7 +217,7 @@ class scanner:
 
     '''Displays current line number, token, lexeme, and associated attributes if they exist'''
     def displayToken(self):
-        print(str(self.lineNum).ljust(10, ' '), str(self.token.name).ljust(20, ' '), self.lexeme.ljust(15, ' '), self.attribute)
+        print(str(self.lineNum).ljust(10, ' '), str(self.token.name).ljust(20, ' '), self.lexeme.ljust(30, ' '), self.attribute)
 
     '''Determines the current attributes, if any, and stores them in scanner.attribute'''
     def getAttributes(self):

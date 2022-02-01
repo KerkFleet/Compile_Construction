@@ -27,7 +27,7 @@ else:
 myscanner = scanner(filename)
 
 # Headers for token data
-print("LineNum".ljust(10, ' '), "Token".ljust(20, ' '), "Lexeme".ljust(15, ' '), "Attribute")
+print("LineNum".ljust(10, ' '), "Token".ljust(20, ' '), "Lexeme".ljust(30, ' '), "Attribute")
 
 # While loop to retrieve tokens until end of file
 while myscanner.token != symbol.eoft:
