@@ -6,14 +6,18 @@ Date: 1/30/2022
 Usage: python3 main.py <filename>
 """
 
-from scanner import scanner
-from symbols import symbol
+import logging
+from rdp import Parser
 import sys
 
 #check python version
 if sys.version_info[0] < 3:
     print("Python3, or a more recent version, is required to run this script")
     exit()
+
+# setup logger
+logging.basicConfig(filename='compiler_debug.log', level=logging.DEBUG)
+
 
 # Get filename from command line
 filename=""
@@ -23,13 +27,9 @@ else:
     print("Usage: python3 main.py <filepath>")
     exit()
 
-# Instantiate scanner
-myscanner = scanner(filename)
-
-# Headers for token data
-print("LineNum".ljust(10, ' '), "Token".ljust(20, ' '), "Lexeme".ljust(30, ' '), "Attribute")
 
 # While loop to retrieve tokens until end of file
-while myscanner.token != symbol.eoft:
-    myscanner.getNextToken()
-    myscanner.displayToken()
+myparser = Parser(filename)
+
+myparser.Prog()
+print("Successfully compiled with no errors.")

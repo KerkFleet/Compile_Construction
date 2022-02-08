@@ -1,5 +1,4 @@
 /*comment test*/
-"Litera"
 /* multiline
 comment */
 
@@ -23,6 +22,7 @@ average
 ten.twenty
 () {} [] , ; . == != < <= > >= 
 =*-/"Test lit no.two, a very long literal sentence within quotes" 
+12.
     
 }
 

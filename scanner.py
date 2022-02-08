@@ -1,6 +1,3 @@
-from itertools import islice
-from symbols import symbol
-
 """A class with the functionality of the scanner portion of a compiler
    The scanner recognizes tokens from a limited version of the C language
 
@@ -18,9 +15,16 @@ from symbols import symbol
 
 """
 
+from itertools import islice
+from symbols import symbol
+import logging
+
+
 class scanner:
     '''Initializes scanner with associated global variables, opens file, and prime reads first char'''
     def __init__(self, filename):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
         self.attribute = ''
         self.lineNum = 1
         self.token = symbol.UNKNOWN 
@@ -58,6 +62,7 @@ class scanner:
             self.attribute = ''
             return
         self.processToken()
+        self.logger.debug(f"LINE {self.lineNum}: token->{self.token.name}, lexeme->{self.lexeme}, attribute->{self.attribute}")
 
     '''Function to read next char from file. Returned in scanner.ch'''
     def getNextCh(self):
