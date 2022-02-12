@@ -16,7 +16,19 @@ if sys.version_info[0] < 3:
     exit()
 
 # setup logger
-logging.basicConfig(filename='compiler_debug.log', level=logging.DEBUG)
+logger = logging.getLogger()
+if len(sys.argv) > 2:
+    if '-v' in sys.argv:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.disable()
+    if '-rdp' in sys.argv:
+        logger.addFilter(logging.Filter(name='rdp'))
+    if '-scanner':
+        logger.addFilter(logging.Filter(name='scanner'))
+else:
+    pass
+
 
 
 # Get filename from command line
