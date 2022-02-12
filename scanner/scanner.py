@@ -15,9 +15,11 @@
 
 """
 
+from symbols.symbols import symbol
 from itertools import islice
-from symbols import symbol
 import logging
+
+
 
 
 class scanner:
@@ -119,19 +121,22 @@ class scanner:
     '''Processes num token and sets associated attribute'''
     def processNumToken(self):
         dec = False
-        while self.ch.isnumeric() or self.ch == '.':
+        while self.ch.isnumeric():
             self.lexeme = self.lexeme + self.ch
-            if(self.ch == '.'):
-                dec = True
-                self.getNextCh()
-                break
             self.getNextCh()
+        if self.ch == '.':
+            self.lexeme = self.lexeme + self.ch
+            dec = True
+            self.getNextCh()
+            if not self.ch.isnumeric():
+                self.token = symbol.UNKNOWN
+                return
         if dec:
             while self.ch.isnumeric():
                 self.lexeme = self.lexeme + self.ch
                 self.getNextCh()
         self.token = symbol.numt
-        if(dec):
+        if dec:
             self.value = float(self.lexeme)
         else:
             self.value = int(self.lexeme)

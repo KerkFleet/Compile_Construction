@@ -4,11 +4,21 @@
 
 This is a scanner portion of a compiler, written in python, which accepts a subset of the C language.
 
+Please note, python3 is required to run the scripts
+
 
 # Scanner Usage
 
 ---
 
-Please note, python3 is required to run the main script.
+```bash
+python3 main_scanner.py {filepath}
+```
 
-Usage: python3 main.py {filepath}
+# Recursive Descent Parser Usage
+
+---
+
+```bash
+python3 main_rdp.py {filepath}
+```

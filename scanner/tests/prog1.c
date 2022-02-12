@@ -16,6 +16,7 @@ abcdefghijklmno_qrstuvwxyz123456
 12.56.78
 0.23
 .34
+12.
 wum
 printf("This is a literal test\n");
 average

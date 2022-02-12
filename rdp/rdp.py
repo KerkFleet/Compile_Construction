@@ -1,5 +1,5 @@
-from symbols import symbol
-from scanner import scanner
+from symbols.symbols import symbol
+from scanner.scanner import scanner
 import logging
 
 
@@ -25,7 +25,7 @@ class Parser:
             self.Rest()
             self.Prog()
         else:
-            return
+            return(symbol.eoft)
 
     '''TYPE -> int | float | char'''
     def Type(self):
@@ -116,9 +116,9 @@ class Parser:
         return
 
     def handleError(self, desired):
-        print("------- ERROR -------: ")
-        print("LINE ", self.myscanner.lineNum)
-        print("Expected token:  ", desired)
-        print("Received token:  ", self.myscanner.token.name)
+        print("ERROR:")
+        print("     LINE ", self.myscanner.lineNum)
+        print("     Expected token:  ", desired)
+        print("     Received token:  ", self.myscanner.token.name)
         self.logger.debug(f"ERROR: LINE {self.myscanner.lineNum}: Expected: {desired}, Received: {self.myscanner.token.name}")
         exit()

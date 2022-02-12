@@ -1,5 +1,5 @@
 """
-Program: Main test for scanner
+Program: Main test for rdp
 Programmer: Shelby Kerkvliet
 Date: 1/30/2022
 
@@ -7,7 +7,9 @@ Usage: python3 main.py <filename>
 """
 
 import logging
-from rdp import Parser
+
+from rdp.rdp import Parser
+from symbols.symbols import symbol
 import sys
 
 #check python version
@@ -16,18 +18,15 @@ if sys.version_info[0] < 3:
     exit()
 
 # setup logger
-logger = logging.getLogger()
 if len(sys.argv) > 2:
     if '-v' in sys.argv:
         logging.basicConfig(level=logging.DEBUG)
+        if '-rdp' in sys.argv:
+            pass
+        if '-scanner':
+            pass
     else:
         logging.disable()
-    if '-rdp' in sys.argv:
-        logger.addFilter(logging.Filter(name='rdp'))
-    if '-scanner':
-        logger.addFilter(logging.Filter(name='scanner'))
-else:
-    pass
 
 
 
@@ -40,8 +39,11 @@ else:
     exit()
 
 
-# While loop to retrieve tokens until end of file
+# Instantiate parser
 myparser = Parser(filename)
 
+#begin recursive descent parsing
 myparser.Prog()
-print("Successfully compiled with no errors.")
+myparser.match(symbol.eoft)
+print("Successfully compiled with no errors")
+
