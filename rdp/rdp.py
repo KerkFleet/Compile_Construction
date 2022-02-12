@@ -1,15 +1,28 @@
+'''A class with functionality to parse a 
+subset of the C language
+
+    Usage:
+    Instantiate with myparser = Parser({filename to parse})
+    A simple call to our start variable begins the RDP:
+    value = myparser.Prog()
+
+    value will hold the final token, which we can ensure
+    is the eoft, necessary for program completion
+'''
 from symbols.symbols import symbol
 from scanner.scanner import scanner
 import logging
 
 
 class Parser:
+    '''Initialize scanner to get tokens for parsing'''
     def __init__(self, filename):
         self.myscanner = scanner(filename)
         self.myscanner.getNextToken()
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
+    '''Function to match desired token to actual token'''
     def match(self, desiredToken):
         if self.myscanner.token == desiredToken:
             self.logger.debug(f"LINE {self.myscanner.lineNum}: Matched {desiredToken.name} to {self.myscanner.token.name}")
