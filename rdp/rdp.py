@@ -25,7 +25,7 @@ class Parser:
     '''Function to match desired token to actual token'''
     def match(self, desiredToken):
         if self.myscanner.token == desiredToken:
-            self.logger.debug(f"LINE {self.myscanner.lineNum}: Matched {desiredToken.name} to {self.myscanner.token.name}")
+            # self.logger.debug(f"LINE {self.myscanner.lineNum}: Matched {desiredToken.name} to {self.myscanner.token.name}")
             self.myscanner.getNextToken()
         else:
             self.handleError(desiredToken.name)
@@ -133,5 +133,5 @@ class Parser:
         print("     LINE ", self.myscanner.lineNum)
         print("     Expected token:  ", desired)
         print("     Received token:  ", self.myscanner.token.name)
-        self.logger.debug(f"ERROR: LINE {self.myscanner.lineNum}: Expected: {desired}, Received: {self.myscanner.token.name}")
+        # self.logger.debug(f"ERROR: LINE {self.myscanner.lineNum}: Expected: {desired}, Received: {self.myscanner.token.name}")
         exit()

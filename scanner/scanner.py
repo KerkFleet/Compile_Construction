@@ -64,7 +64,7 @@ class scanner:
             self.attribute = ''
             return
         self.processToken()
-        self.logger.debug(f"LINE {self.lineNum}: token->{self.token.name}, lexeme->{self.lexeme}, attribute->{self.attribute}")
+        # self.logger.debug(f"LINE {self.lineNum}: token->{self.token.name}, lexeme->{self.lexeme}, attribute->{self.attribute}")
 
     '''Function to read next char from file. Returned in scanner.ch'''
     def getNextCh(self):
