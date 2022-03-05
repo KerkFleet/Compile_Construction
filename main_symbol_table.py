@@ -6,7 +6,6 @@ Date: 3/5/2022
 Usage: python3 main_symbol_table.py 
 """
 
-from pygments import lex
 from symbol_table.symbol_table import Symbol_Table
 from symbols.symbols import symbol
 
