@@ -60,7 +60,8 @@ class Symbol_Table:
     '''
     - Private function to determine hased location based on lexeme
     - '_' is used to denote a private function(though technically still accessible publicly)
-    - Hash algorithm takes 
+    - Hash algorithm takes num token or literal token lexemes and bitshifts each character
+        by its location in the string
     '''
     def _hash(self, lexeme): 
         x = 0
