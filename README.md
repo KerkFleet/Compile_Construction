@@ -22,3 +22,18 @@ python3 main_scanner.py {filepath}
 ```bash
 python3 main_rdp.py {filepath}
 ```
+
+# Symbol Table Testing
+
+---
+
+A main testing script to test basic functionalities is found in the top level directory as 'main_symbol_table.py'.
+
+The symbol table itself as well as the Entry classes for creating the linked list of entries can be found in the symbol_table folder.
+
+
+```bash
+python3 main_symbol_table.py
+```
+
+

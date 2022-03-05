@@ -3,7 +3,7 @@ Program: Main test for scanner
 Programmer: Shelby Kerkvliet
 Date: 1/30/2022
 
-Usage: python3 main.py <filename>
+Usage: python3 main_scanner.py <filename>
 """
 
 import sys
