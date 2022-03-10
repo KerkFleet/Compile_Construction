@@ -14,29 +14,27 @@ class Entry:
         self.lexeme = lexeme
         self.token = token
         self.depth = depth
-        self.entry_type = None
+        self.entry_type = None # will hold entry type enum
+        self.entry_details = None # will hold var, const, or func entry data 
         self.next = None
 
 
-class Variable_Entry(Entry):
-    def __init__(self, lexeme, token, depth):
-        super.__init__(lexeme, token, depth)
+class Variable_Entry():
+    def __init__(self):
         self.var_type = None
         self.offset = None
         self.size = None
 
 
-class Constant_Entry(Entry):
-    def __init__(self, lexeme, token, depth):
-        super.__init__(lexeme, token, depth)
+class Constant_Entry():
+    def __init__(self):
         self.var_type = None
         self.offset = None
         self.value = None
 
 
-class Function_Entry(Entry):
-    def __init__(self, lexeme, token, depth):
-        super.__init__(lexeme, token, depth)
+class Function_Entry():
+    def __init__(self):
         self.size_of_local = None
         self.num_of_params = None
         self.return_type = None
