@@ -3,13 +3,20 @@
 
 float a; 
 int b,c;
-int main( )
+float e, g;
+const f = 8;
+int main(int z )
 {
+const b = 6;
    /* Multiline comment
       test */
-   float d;
+   int x;
 }
+int y;
 float func( int z, float y)
 {
-   char a, b, c, d;
+const b = 6.3;
+   char a, c, d;
+   float e;
 }
+char x;

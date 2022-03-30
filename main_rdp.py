@@ -45,5 +45,6 @@ myparser = Parser(filename)
 #begin recursive descent parsing
 myparser.Prog()
 myparser.match(symbol.eoft)
+myparser.sym_tab.writeTable(0)
 print("Successfully compiled with no errors")
 

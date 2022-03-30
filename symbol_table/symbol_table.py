@@ -12,6 +12,7 @@ to be used by a recursive descent parser during compilation
     many collisions
 '''
 from .entry import Entry
+from symbol_table import entry
 
 class Symbol_Table:
 
@@ -33,7 +34,9 @@ class Symbol_Table:
         for i in range(self.tablesize):
             temp = self.table[i]
             while temp and temp.depth == depth:
-                temp = temp.next
+                x = temp.next
+                del(temp)
+                temp = x
             self.table[i] = temp
 
     '''Returns the node object(pointer) with the specified lexeme'''
@@ -54,7 +57,7 @@ class Symbol_Table:
             temp = self.table[i]
             while temp:
                 if temp.depth == depth:
-                    print("    ", temp.lexeme)
+                    print("    Lex: ", str(temp.lexeme).ljust(27, ' '), "    Class: ", temp.entry_type.name)
                 temp = temp.next
 
     '''

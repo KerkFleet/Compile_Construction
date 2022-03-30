@@ -35,8 +35,8 @@ class Constant_Entry():
 
 class Function_Entry():
     def __init__(self):
-        self.size_of_local = None
-        self.num_of_params = None
+        self.size_of_local = 0
+        self.num_of_params = 0
         self.return_type = None
         self.param_list = None
 
