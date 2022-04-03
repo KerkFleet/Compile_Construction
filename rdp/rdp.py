@@ -9,6 +9,7 @@ subset of the C language
     value will hold the final token, which we can ensure
     is the eoft, necessary for program completion
 '''
+from distutils.command.build import build
 from symbols.symbols import symbol
 from scanner.scanner import scanner
 import logging
@@ -106,10 +107,7 @@ class Parser:
         Grammar rule: REST -> (PARAMLIST) COMPOUND | IDTAIL ; PROG
         Inherits: type -> entry.Var_Type.<type> (enum specifying type)
                   entryPtr -> entry.Entry()
-        Synthesizes: rsyn -> entry.Function_Entry(),
-                            or entry.Constant_Entry(),
-                            or entry.Variable_Entry(),
-                            (entry_details for an entry.Entry() node)
+        Synthesizes: none
         """
         if self.myscanner.token == symbol.lparent:
             self.depth_offset.offset = self.depth_offset.offset + self.calc_size(type)
@@ -127,14 +125,7 @@ class Parser:
             self.match(symbol.rparent)
             self.Compound(func_entry) # get size of locals
         else:
-            #build variable entry
-            var_entry = entry.Variable_Entry()
-            var_entry.var_type = type # get variable type
-            var_entry.size = self.calc_size(type) # get variable size
-            var_entry.offset = self.depth_offset.offset
-            self.depth_offset.offset = self.depth_offset.offset + var_entry.size
-            entryPtr.entry_details = var_entry
-            entryPtr.entry_type = entry.Entry_Type.varEntry
+            self.build_var_entry(entryPtr, type)
             self.IdTail(type)
             self.match(symbol.semicolont)
             self.Prog()
@@ -159,16 +150,10 @@ class Parser:
             entryPtr = self.sym_tab.lookup(self.myscanner.lexeme)
 
             # create variable entry for parameter entry
-            var_entry = entry.Variable_Entry()
-            var_entry.var_type = type
-            var_entry.size = self.calc_size(type)
-            var_entry.offset = self.depth_offset.offset
-            self.depth_offset.offset = self.depth_offset.offset + var_entry.size
-            entryPtr.entry_details = var_entry
-            entryPtr.entry_type = entry.Entry_Type.varEntry
+            self.build_var_entry(entryPtr, type)
 
             # update size of locals
-            func_entry.size_of_local = func_entry.size_of_local + var_entry.size
+            func_entry.size_of_local = func_entry.size_of_local + self.calc_size(type)
 
             func_entry.num_of_params = func_entry.num_of_params + 1 # increment number of parameters in function entry
             self.match(symbol.idt)
@@ -197,16 +182,10 @@ class Parser:
             entryPtr = self.sym_tab.lookup(self.myscanner.lexeme)
 
             # create variable entry for parameter entry
-            var_entry = entry.Variable_Entry()
-            var_entry.var_type = type
-            var_entry.size = self.calc_size(type)
-            var_entry.offset = self.depth_offset.offset
-            self.depth_offset.offset = self.depth_offset.offset + var_entry.size
-            entryPtr.entry_details = var_entry
-            entryPtr.entry_type = entry.Entry_Type.varEntry
+            self.build_var_entry(entryPtr, type)
 
             # update size of locals
-            func_entry.size_of_local = func_entry.size_of_local + var_entry.size
+            func_entry.size_of_local = func_entry.size_of_local + self.calc_size(type)
 
             func_entry.num_of_params = func_entry.num_of_params + 1 # increment number of parameters in function entry
             self.match(symbol.idt)
@@ -282,16 +261,9 @@ class Parser:
             self.sym_tab.insert(self.myscanner.lexeme, self.myscanner.token, self.depth)
             entryPtr = self.sym_tab.lookup(self.myscanner.lexeme)
 
-            # build variable entry
-            var_entry = entry.Variable_Entry()
-            var_entry.var_type = type # get variable type
-            var_entry.size = self.calc_size(type) # get variable size
-            var_entry.offset = self.depth_offset.offset
-            self.depth_offset.offset = self.depth_offset.offset + self.calc_size(type)
-            entryPtr.entry_details = var_entry
-            entryPtr.entry_type = entry.Entry_Type.varEntry
+            self.build_var_entry(entryPtr, type)
 
-            func_entry.size_of_local = func_entry.size_of_local + var_entry.size # update size of locals
+            func_entry.size_of_local = func_entry.size_of_local + self.calc_size(type)
 
             self.match(symbol.idt)
             self.IdTail(type, func_entry)
@@ -313,30 +285,175 @@ class Parser:
             self.check_for_duplicates(self.myscanner.lexeme)
             self.sym_tab.insert(self.myscanner.lexeme, self.myscanner.token, self.depth)
             entryPtr = self.sym_tab.lookup(self.myscanner.lexeme)
-
-            # build variable entry
-            var_entry = entry.Variable_Entry()
-            var_entry.var_type = type 
-            var_entry.size = self.calc_size(type) 
-            var_entry.offset = self.depth_offset.offset
-            self.depth_offset.offset = self.depth_offset.offset + self.calc_size(type)
-            entryPtr.entry_details = var_entry
-            entryPtr.entry_type = entry.Entry_Type.varEntry
+            self.build_var_entry(entryPtr, type)
 
             # update function entry's size of locals if in a function
             if func_entry:
-                func_entry.size_of_local = func_entry.size_of_local + var_entry.size
+                func_entry.size_of_local = func_entry.size_of_local + self.calc_size(type)
 
             self.match(symbol.idt)
             self.IdTail(type, func_entry)
 
-    '''STAT_LIST -> e'''
-    def StatList(self):
+    def RetStat(self):
+        """
+        Grammar rule: RET_STAT -> e
+        Inherits: 
+        Synthesizes: none
+        """
         return
 
-    '''RET_STAT -> e'''
-    def RetStat(self):
+    def StatList(self):
+        """
+        Grammar rule: STAT_LIST -> Statement ; StatList | e 
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.idt:
+            self.Statement()
+            self.match(symbol.semicolont)
+            self.StatList()
+
+    def Statement(self):
+        """
+        Grammar rule: Statement -> AssignStat | IOStat
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.idt:
+            self.AssignStat()
+        else:
+            self.IOStat()
+
+    def AssignStat(self):
+        """
+        Grammar rule: AssignStat -> idt = Expr
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.idt:
+            self.check_declaration(self.myscanner.lexeme)
+            self.match(symbol.idt)
+            self.match(symbol.assignopt)
+            self.Expr()
+        else:
+            self.handleError(symbol.idt)
+
+    def IOStat(self):
+        """
+        Grammar rule: IOStat -> e
+        Inherits: 
+        Synthesizes: none
+        """
         return
+
+    def Expr(self):
+        """
+        Grammar rule:  Expr -> Realtion
+        Inherits: 
+        Synthesizes: none
+        """
+        self.Realtion()
+
+    def Realtion(self):
+        """
+        Grammar rule: Realtion -> SimpleExpr
+        Inherits: 
+        Synthesizes: none
+        """
+        self.SimpleExpr()
+
+    def SimpleExpr(self):
+        """
+        Grammar rule: SimpleExpr -> Signop Term MoreTerm
+        Inherits: 
+        Synthesizes: none
+        """
+        self.Signop()
+        self.Term()
+        self.MoreTerm()
+
+    def MoreTerm(self):
+        """
+        Grammar rule: MoreTerm -> Addop Term MoreTerm | e
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.addopt:
+            self.Addop()
+            self.Term()
+            self.MoreTerm()
+
+    def Term(self):
+        """
+        Grammar rule: Term -> Factor MoreFactor
+        Inherits: 
+        Synthesizes: none
+        """
+        self.Factor()
+        self.MoreFactor()
+
+    def MoreFactor(self):
+        """
+        Grammar rule: MoreFactor -> Mulop Factor MoreFactor | e
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.mulopt:
+            self.Mulop()
+            self.Factor()
+            self.MoreFactor()
+
+
+    def Factor(self):
+        """
+        Grammar rule: Factor -> id | num | (Expr)
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.idt:
+            self.check_declaration(self.myscanner.lexeme)
+            self.match(symbol.idt)
+        elif self.myscanner.token == symbol.numt:
+            self.match(symbol.numt)
+        elif self.myscanner.token == symbol.lparent:
+            self.match(symbol.lparent)
+            self.Expr()
+            self.match(symbol.rparent)
+        else:
+            self.handleError([symbol.idt, symbol.numt, symbol.lparent])
+
+    def Addop(self):
+        """
+        Grammar rule: Addop -> + | - | ||
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.addopt:
+            self.match(symbol.addopt)
+        else:
+            self.handleError(symbol.addopt)
+
+    def Mulop(self):
+        """
+        Grammar rule: Mulop -> * | / | &&
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.mulopt:
+            self.match(symbol.mulopt)
+        else:
+            self.handleError(symbol.mulopt)
+
+    def Signop(self):
+        """
+        Grammar rule: Signop -> ! | - | e
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.signopt:
+            self.match(symbol.signopt)
+        elif self.myscanner.token == symbol.addopt and self.myscanner.lexeme == '-':
+            self.match(symbol.addopt)
 
     def calc_size(self, type):
         if type == entry.Var_Type.charType:
@@ -345,6 +462,21 @@ class Parser:
             return 2
         if type == entry.Var_Type.floatType:
             return 4
+    
+    def build_var_entry(self, entryPtr, type):
+        var_entry = entry.Variable_Entry()
+        var_entry.var_type = type 
+        var_entry.size = self.calc_size(type) 
+        var_entry.offset = self.depth_offset.offset
+        self.depth_offset.offset = self.depth_offset.offset + self.calc_size(type)
+        entryPtr.entry_details = var_entry
+        entryPtr.entry_type = entry.Entry_Type.varEntry
+    
+    def build_const_entry(self, entryPtr, type):
+        pass
+
+    def build_func_entry(self):
+        pass
     
     def check_for_duplicates(self, lex):
         entryPtr = self.sym_tab.lookup(lex)
@@ -355,7 +487,17 @@ class Parser:
             exit()
         else:
             return
-
+        
+    def check_declaration(self, lex):
+        ptr = self.sym_tab.lookup(lex)
+        while ptr:
+            if ptr.lexeme == lex:
+                return
+            ptr = ptr.next
+        print("ERROR: ")
+        print("     LINE ", self.myscanner.lineNum)
+        print("     Undeclared variable: '", lex)
+        exit()
 
     def handleError(self, desired):
         print("ERROR:")

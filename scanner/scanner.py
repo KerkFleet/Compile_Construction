@@ -94,7 +94,10 @@ class scanner:
             else:
                 self.processSingleToken()
         elif self.lexeme[0] == '!':
-            self.processDoubleToken()
+            if self.ch == '=':
+                self.processDoubleToken()
+            else:
+                self.processSingleToken()
         else:
             self.processSingleToken()
         self.getAttributes()
@@ -215,6 +218,8 @@ class scanner:
             self.token = symbol.relopt
         elif self.lexeme == '=':
             self.token = symbol.assignopt
+        elif self.lexeme == '!':
+            self.token = symbol.signopt
         else:
             self.token = symbol.UNKNOWN
     

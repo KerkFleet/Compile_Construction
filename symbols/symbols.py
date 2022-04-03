@@ -29,5 +29,6 @@ class symbol(IntEnum):
     literalt = 23
     numt = 24
     idt = 25
-    eoft = 26
-    UNKNOWN = 27
+    signopt = 26
+    eoft = 27
+    UNKNOWN = 28
