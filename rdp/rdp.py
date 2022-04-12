@@ -9,7 +9,6 @@ subset of the C language
     value will hold the final token, which we can ensure
     is the eoft, necessary for program completion
 '''
-from distutils.command.build import build
 from symbols.symbols import symbol
 from scanner.scanner import scanner
 import logging
@@ -17,8 +16,8 @@ from symbol_table.symbol_table import Symbol_Table
 from symbol_table import entry
 
 class Offset_Node:
-    def __init__(self):
-        self.offset = 0
+    def __init__(self, start=0):
+        self.offset = start
         self.next = None
 
 class Parser:
@@ -33,6 +32,12 @@ class Parser:
         self.logger.setLevel(logging.DEBUG)
         self.depth = 0
         self.depth_offset = Offset_Node()
+        self.param_offset = Offset_Node(start=4)
+        self.temp_num = 1
+        filename = filename.replace(".c", ".tac")
+        self.tacFile = open(filename, "w")
+        self.line = 1
+        self.visual = True
         
 
     def match(self, desiredToken):
@@ -65,19 +70,9 @@ class Parser:
             self.sym_tab.insert(self.myscanner.lexeme, self.myscanner.token, self.depth)
             entryPtr = self.sym_tab.lookup(self.myscanner.lexeme)
             entryPtr.entry_type = entry.Entry_Type.constEntry
-            const_entry = entry.Constant_Entry()
             self.match(symbol.idt)
             self.match(symbol.assignopt)
-            if isinstance(self.myscanner.value, int):
-                const_entry.var_type = entry.Var_Type.intType
-                const_entry.offset = self.depth_offset.offset
-                self.depth_offset.offset = self.depth_offset.offset + self.calc_size(entry.Var_Type.intType)
-            elif isinstance(self.myscanner.value, float):
-                const_entry.var_type = entry.Var_Type.floatType
-                const_entry.offset = self.depth_offset.offset
-                self.depth_offset.offset = self.depth_offset.offset + self.calc_size(entry.Var_Type.intType)
-            const_entry.value = self.myscanner.value
-            entryPtr.entry_details = const_entry
+            self.build_const_entry(entryPtr)
             self.match(symbol.numt)
             self.match(symbol.semicolont)
             self.Prog()
@@ -138,6 +133,8 @@ class Parser:
         """
         if self.myscanner.token == symbol.integert or self.myscanner.token == symbol.floatt or self.myscanner.token == symbol.chart:
             type = self.Type()
+            # reset offset
+            self.param_offset.offset = 4
             # add param node to parameter list
             param = entry.Param_Node()
             param.param_type = type
@@ -150,7 +147,7 @@ class Parser:
             entryPtr = self.sym_tab.lookup(self.myscanner.lexeme)
 
             # create variable entry for parameter entry
-            self.build_var_entry(entryPtr, type)
+            self.build_var_entry(entryPtr, type, parameter=True)
 
             # update size of locals
             func_entry.size_of_local = func_entry.size_of_local + self.calc_size(type)
@@ -296,11 +293,14 @@ class Parser:
 
     def RetStat(self):
         """
-        Grammar rule: RET_STAT -> e
+        Grammar rule: RET_STAT -> returnt Expr ; 
         Inherits: 
         Synthesizes: none
         """
-        return
+        self.match(symbol.returnt)
+        self.Expr()
+        self.match(symbol.semicolont)
+
 
     def StatList(self):
         """
@@ -326,17 +326,25 @@ class Parser:
 
     def AssignStat(self):
         """
-        Grammar rule: AssignStat -> idt = Expr
+        Grammar rule: AssignStat -> idt = Expr | idt = FunctionCall
         Inherits: 
         Synthesizes: none
         """
+        self.check_declaration(self.myscanner.lexeme)
+        entryPtr = self.sym_tab.lookup(self.myscanner.lexeme)
+        self.match(symbol.idt)
+        self.match(symbol.assignopt)
+        syn = None
         if self.myscanner.token == symbol.idt:
-            self.check_declaration(self.myscanner.lexeme)
-            self.match(symbol.idt)
-            self.match(symbol.assignopt)
-            self.Expr()
+            entryPtr2 = self.sym_tab.lookup(self.myscanner.lexeme)
+            if entryPtr2.entry_type == entry.Entry_Type.functionEntry:
+                syn = self.FunctionCall()
+            else:
+                syn = self.Expr()
         else:
-            self.handleError(symbol.idt)
+            syn = self.Expr()
+        code = entryPtr.lexeme + " = " 
+        self.emit(code)
 
     def IOStat(self):
         """
@@ -428,10 +436,7 @@ class Parser:
         Inherits: 
         Synthesizes: none
         """
-        if self.myscanner.token == symbol.addopt:
-            self.match(symbol.addopt)
-        else:
-            self.handleError(symbol.addopt)
+        self.match(symbol.addopt)
 
     def Mulop(self):
         """
@@ -439,10 +444,7 @@ class Parser:
         Inherits: 
         Synthesizes: none
         """
-        if self.myscanner.token == symbol.mulopt:
-            self.match(symbol.mulopt)
-        else:
-            self.handleError(symbol.mulopt)
+        self.match(symbol.mulopt)
 
     def Signop(self):
         """
@@ -455,6 +457,51 @@ class Parser:
         elif self.myscanner.token == symbol.addopt and self.myscanner.lexeme == '-':
             self.match(symbol.addopt)
 
+    def FunctionCall(self):
+        """
+        Grammar rule: FunctionCall -> idt ( Params )
+        Inherits: 
+        Synthesizes: none
+        """
+        self.check_declaration(self.myscanner.lexeme)
+        self.match(symbol.idt)
+        self.match(symbol.lparent)
+        self.Params()
+        self.match(symbol.rparent)
+
+    def Params(self):
+        """
+        Grammar rule: Params -> idt ParamsTail | num ParamsTail | e
+        Inherits: none
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.idt:
+            self.check_declaration(self.myscanner.lexeme)
+            self.match(symbol.idt)
+            self.ParamsTail()
+        elif self.myscanner.token == symbol.numt:
+            self.match(symbol.numt)
+            self.ParamsTail()
+        else:
+            return
+
+    def ParamsTail(self):
+        """
+        Grammar rule: ParamsTail -> , idt ParamsTail | , num ParamsTail | e
+        Inherits: none
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.commat:
+            self.match(symbol.commat)
+            if self.myscanner.token == symbol.idt:
+                self.check_declaration(self.myscanner.lexeme)
+                self.match(symbol.idt)
+                self.ParamsTail()
+            else:
+                self.match(symbol.numt)
+                self.ParamsTail()
+
+
     def calc_size(self, type):
         if type == entry.Var_Type.charType:
             return 1
@@ -463,20 +510,61 @@ class Parser:
         if type == entry.Var_Type.floatType:
             return 4
     
-    def build_var_entry(self, entryPtr, type):
+    def build_var_entry(self, entryPtr, type, parameter=False):
         var_entry = entry.Variable_Entry()
         var_entry.var_type = type 
         var_entry.size = self.calc_size(type) 
         var_entry.offset = self.depth_offset.offset
-        self.depth_offset.offset = self.depth_offset.offset + self.calc_size(type)
+        if parameter:
+            self.param_offset.offset = self.param_offset.offset + self.calc_size(type)
+        else:
+            self.depth_offset.offset = self.depth_offset.offset - self.calc_size(type)
         entryPtr.entry_details = var_entry
         entryPtr.entry_type = entry.Entry_Type.varEntry
     
-    def build_const_entry(self, entryPtr, type):
-        pass
+    def build_const_entry(self, entryPtr):
+        const_entry = entry.Constant_Entry()
+        if isinstance(self.myscanner.value, int):
+            const_entry.var_type = entry.Var_Type.intType
+            const_entry.offset = self.depth_offset.offset
+            self.depth_offset.offset = self.depth_offset.offset - self.calc_size(entry.Var_Type.intType)
+        elif isinstance(self.myscanner.value, float):
+            const_entry.var_type = entry.Var_Type.floatType
+            const_entry.offset = self.depth_offset.offset
+            self.depth_offset.offset = self.depth_offset.offset - self.calc_size(entry.Var_Type.intType)
+        const_entry.value = self.myscanner.value
+        entryPtr.entry_details = const_entry
 
     def build_func_entry(self):
         pass
+
+    def newTemp(self):
+        var = "_T" + str(self.temp_num)
+        self.temp_num = self.temp_num + 1
+        self.sym_tab.insert(var, symbol.idt, self.depth)
+        if(self.temp_num > 99):
+            print("Temporary variable overflow")
+            exit()
+        return self.sym_tab.lookup(var)
+    
+    def b_var(self, offset):
+        if offset < 0:
+            var = "_BP" + str(offset)
+        else:
+            var = "_BP+" + str(offset)
+        return var
+
+    def emit(self, code):
+        self.tacFile.writelines(code)
+        if self.visual:
+            if self.line < 20:
+                print(code)
+            else:
+                input("Press enter to continue...")
+                print(code)
+                self.line = 1
+        self.line = self.line + 1
+
     
     def check_for_duplicates(self, lex):
         entryPtr = self.sym_tab.lookup(lex)
