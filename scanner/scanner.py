@@ -50,6 +50,7 @@ class scanner:
         self.resword.append("continue")
         self.resword.append("void")
         self.resword.append("const")
+        self.resword.append("return")
 
     '''Retrieves next token in file. Returns token in scanner.token '''
     def getNextToken(self):
@@ -116,7 +117,7 @@ class scanner:
                 print("Identifier must be 27 characters or less")
         if too_large:
             return
-        for sym in islice(symbol, symbol.constt+1):
+        for sym in islice(symbol, symbol.returnt+1):
             if self.resword[sym] == self.lexeme:
                 self.token = sym
                 return
