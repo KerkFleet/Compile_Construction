@@ -45,6 +45,9 @@ myparser = Parser(filename)
 #begin recursive descent parsing
 myparser.Prog()
 myparser.match(symbol.eoft)
-myparser.sym_tab.writeTable(0)
-print("Successfully compiled with no errors")
+main = myparser.sym_tab.lookup("main")
+if not main:
+    print("ERROR: No function 'main' found.")
+else:
+    print("Successfully compiled with no errors")
 
