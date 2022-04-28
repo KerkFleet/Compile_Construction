@@ -296,7 +296,7 @@ class Parser:
         Inherits: 
         Synthesizes: none
         """
-        if self.myscanner.token == symbol.idt:
+        if self.myscanner.token == symbol.idt or self.myscanner.token == symbol.cint or self.myscanner.token == symbol.coutt:
             self.Statement()
             self.match(symbol.semicolont)
             self.StatList()
@@ -340,11 +340,82 @@ class Parser:
 
     def IOStat(self):
         """
-        Grammar rule: IOStat -> e
+        Grammar rule: IOStat -> InStat | OutStat
         Inherits: 
         Synthesizes: none
         """
-        return
+        if self.myscanner.token == symbol.cint:
+            self.InStat()
+        else:
+            self.OutStat()
+
+    def OutStat(self):
+        """
+        Grammar rule: OutStat -> cout << OutOptions OutEnd
+        Inherits: 
+        Synthesizes: none
+        """
+        self.match(symbol.coutt)
+        self.match(symbol.outarrowt)
+        self.OutOptions()
+        self.OutEnd()
+
+    def InStat(self):
+        """
+        Grammar rule: InStat -> cin >> idt InEnd
+        Inherits: 
+        Synthesizes: none
+        """
+        self.match(symbol.cint)
+        self.match(symbol.inarrowt)
+        self.check_declaration(self.myscanner.lexeme)
+        self.match(symbol.idt)
+        self.InEnd()
+
+    def InEnd(self):
+        """
+        Grammar rule: InEnd -> >> idt InEnd | e
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.inarrowt:
+            self.match(symbol.inarrowt)
+            self.check_declaration(self.myscanner.lexeme)
+            self.match(symbol.idt)
+            self.InEnd()
+
+    def OutOptions(self):
+        """
+        Grammar rule: OutOptions -> idt | Literal | endl
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.idt:
+            self.check_declaration(self.myscanner.lexeme)
+            self.match(symbol.idt)
+        elif self.myscanner.token == symbol.literalt:
+            entryPtr = self.icg.new_string(0)
+            entryPtr.entry_type = entry.Entry_Type.stringEntry
+            strEntry = entry.Literal_Entry()
+            strEntry.value = self.myscanner.lexeme
+            entryPtr.entry_details = strEntry
+            self.icg.write_string(self.myscanner.lexeme)
+            self.match(symbol.literalt)
+        elif self.myscanner.token == symbol.endlt:
+            self.match(symbol.endlt)
+        else:
+            self.handleError([symbol.idt, symbol.literalt, symbol.endlt])
+
+    def OutEnd(self):
+        """
+        Grammar rule: OutEnd -> << OutOptions OutEnd | e
+        Inherits: 
+        Synthesizes: none
+        """
+        if self.myscanner.token == symbol.outarrowt:
+            self.match(symbol.outarrowt)
+            self.OutOptions()
+            self.OutEnd()
 
     def Expr(self):
         """
