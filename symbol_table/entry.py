@@ -40,6 +40,10 @@ class Function_Entry():
         self.return_type = None
         self.param_list = None
 
+class Literal_Entry():
+    def __init__(self):
+        self.value = ""
+
 
 '''Node to create a single paramenter entry for the function_entry parameter list'''
 class Param_Node:
@@ -60,3 +64,4 @@ class Entry_Type(IntEnum):
     constEntry = 0
     varEntry = 1
     functionEntry = 2
+    stringEntry = 3
