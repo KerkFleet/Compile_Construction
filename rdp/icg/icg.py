@@ -5,9 +5,10 @@ from symbols.symbols import symbol
 
 class CodeGenerator:
     def __init__(self, sym_tab : Symbol_Table, filename):
-        self.visual = True
+        self.visual = False
         self.sym_tab = sym_tab
         self.temp_num = 1
+        self.string_num = 1
         self.line = 1
         self.tacFile = open(filename, "w")
 
@@ -16,6 +17,15 @@ class CodeGenerator:
         self.temp_num = self.temp_num + 1
         self.sym_tab.insert(var, symbol.idt, depth)
         if(self.temp_num > 99):
+            print("Temporary variable overflow")
+            exit()
+        return self.sym_tab.lookup(var)
+
+    def new_string(self, depth):
+        var = "_S" + str(self.string_num)
+        self.string_num = self.string_num + 1
+        self.sym_tab.insert(var, symbol.literalt, depth)
+        if(self.string_num > 99):
             print("Temporary variable overflow")
             exit()
         return self.sym_tab.lookup(var)
@@ -69,3 +79,16 @@ class CodeGenerator:
     def proc_footer_stat(self, footer):
         code = "endp " + footer + "\n"
         self.emit(code)
+
+    def write_string(self, string):
+        code = "wrs " + string
+        self.emit(code)
+
+    def write_ch(self, char):
+        code = "wrc " + char
+        self.emit(code)
+
+    def write_int(self, integer):
+        code = "wri " + integer
+        self.emit(code)
+
