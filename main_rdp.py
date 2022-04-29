@@ -10,6 +10,7 @@ import logging
 
 from rdp.rdp import Parser
 from symbols.symbols import symbol
+from mcg.mcg import MachineCodeGenerator
 import sys
 
 #check python version
@@ -46,8 +47,11 @@ myparser = Parser(filename)
 myparser.Prog()
 myparser.match(symbol.eoft)
 main = myparser.sym_tab.lookup("main")
+myparser.icg.tacFile.close()
 if not main:
     print("ERROR: No function 'main' found.")
+    exit(0)
 else:
     print("Successfully compiled with no errors")
-
+mymcg = MachineCodeGenerator(myparser.icg.filename, myparser.sym_tab)
+mymcg.generate()
