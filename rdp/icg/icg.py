@@ -10,6 +10,7 @@ class CodeGenerator:
         self.temp_num = 1
         self.string_num = 1
         self.line = 1
+        self.filename = filename
         self.tacFile = open(filename, "w")
 
     def new_temp(self, depth):
@@ -32,9 +33,9 @@ class CodeGenerator:
     
     def b_var(self, offset):
         if offset < 0:
-            var = "_BP" + str(offset)
+            var = "[BP" + str(offset) + "]"
         else:
-            var = "_BP+" + str(offset)
+            var = "[BP+" + str(offset) + "]"
         return var
 
     def emit(self, code):
@@ -92,3 +93,6 @@ class CodeGenerator:
         code = "wri " + integer
         self.emit(code)
 
+    def read_int(self, integer):
+        code = "rdi " + integer
+        self.emit(code)

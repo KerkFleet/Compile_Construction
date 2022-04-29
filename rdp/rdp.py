@@ -369,6 +369,11 @@ class Parser:
         self.match(symbol.cint)
         self.match(symbol.inarrowt)
         self.check_declaration(self.myscanner.lexeme)
+        var = self.myscanner.lexeme
+        entryPtr = self.sym_tab.lookup(self.myscanner.lexeme)
+        if entryPtr.depth > 0:
+            var = self.icg.b_var(entryPtr.entry_details.offset)
+        self.icg.read_int(var)
         self.match(symbol.idt)
         self.InEnd()
 
@@ -381,6 +386,11 @@ class Parser:
         if self.myscanner.token == symbol.inarrowt:
             self.match(symbol.inarrowt)
             self.check_declaration(self.myscanner.lexeme)
+            var = self.myscanner.lexeme
+            entryPtr = self.sym_tab.lookup(self.myscanner.lexeme)
+            if entryPtr.depth > 0:
+                var = self.icg.b_var(entryPtr.entry_details.offset)
+            self.icg.read_int(var)
             self.match(symbol.idt)
             self.InEnd()
 
@@ -392,6 +402,11 @@ class Parser:
         """
         if self.myscanner.token == symbol.idt:
             self.check_declaration(self.myscanner.lexeme)
+            var = self.myscanner.lexeme
+            entryPtr = self.sym_tab.lookup(self.myscanner.lexeme)
+            if entryPtr.depth > 0:
+                var = self.icg.b_var(entryPtr.entry_details.offset)
+            self.icg.write_int(var)
             self.match(symbol.idt)
         elif self.myscanner.token == symbol.literalt:
             entryPtr = self.icg.new_string(0)
@@ -399,7 +414,7 @@ class Parser:
             strEntry = entry.Literal_Entry()
             strEntry.value = self.myscanner.lexeme
             entryPtr.entry_details = strEntry
-            self.icg.write_string(self.myscanner.lexeme)
+            self.icg.write_string(entryPtr.lexeme)
             self.match(symbol.literalt)
         elif self.myscanner.token == symbol.endlt:
             self.match(symbol.endlt)
