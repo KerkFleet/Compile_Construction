@@ -96,3 +96,7 @@ class CodeGenerator:
     def read_int(self, integer):
         code = "rdi " + integer
         self.emit(code)
+    
+    def write_line(self):
+        code = "wrln"
+        self.emit(code)

@@ -1,5 +1,6 @@
 proc main
-_BP-2 = b*d
-_BP-4 = a+_BP-2
-c = _BP-4
+_BP-8 = _BP-2 + _BP-4
+_BP-6 = _BP-8
+_AX = 0
 endp main
+

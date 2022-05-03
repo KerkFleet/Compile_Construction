@@ -35,6 +35,7 @@ class Parser:
         self.logger.setLevel(logging.DEBUG)
         self.depth_offset = Offset_Node()
         self.param_offset = Offset_Node(start=4)
+        self.current_func = None
         self.depth = 0
         
 
@@ -108,6 +109,7 @@ class Parser:
             entryPtr.entry_details = func_entry
             entryPtr.entry_type = entry.Entry_Type.functionEntry
             func_entry.return_type = type # get return type
+            self.current_func = func_entry
             self.icg.proc_header_stat(entryPtr.lexeme)
             self.match(symbol.lparent)
             self.depth = self.depth + 1 
@@ -286,7 +288,7 @@ class Parser:
         """
         self.match(symbol.returnt)
         syn = self.Expr()
-        self.icg.copy_stat("_AX", syn)
+        self.icg.copy_stat("ax", syn)
         self.match(symbol.semicolont)
 
 
@@ -418,6 +420,7 @@ class Parser:
             self.match(symbol.literalt)
         elif self.myscanner.token == symbol.endlt:
             self.match(symbol.endlt)
+            self.icg.write_line()
         else:
             self.handleError([symbol.idt, symbol.literalt, symbol.endlt])
 
@@ -472,6 +475,7 @@ class Parser:
             asyn = self.Addop()
             tsyn = self.Term("")
             syn = self.icg.new_temp(self.depth)
+            self.current_func.size_of_local = self.current_func.size_of_local + 2
             self.build_var_entry(syn, entry.Var_Type.intType)
             syn = self.icg.b_var(syn.entry_details.offset)
             self.icg.binary_assignment(syn, min, tsyn, asyn)
@@ -488,6 +492,7 @@ class Parser:
         fsyn = self.Factor()
         if tin:
             temp = self.icg.new_temp(self.depth)
+            self.current_func.size_of_local = self.current_func.size_of_local + 2
             self.build_var_entry(temp, entry.Var_Type.intType)
             temp = self.icg.b_var(temp.entry_details.offset)
             self.icg.unary_assignment(temp, fsyn, tin)
@@ -506,6 +511,7 @@ class Parser:
             msyn = self.Mulop()
             fsyn = self.Factor()
             syn = self.icg.new_temp(self.depth)
+            self.current_func.size_of_local = self.current_func.size_of_local + 2
             self.build_var_entry(syn, entry.Var_Type.intType)
             syn = self.icg.b_var(syn.entry_details.offset)
             self.icg.binary_assignment(syn, min, fsyn, msyn)
@@ -590,7 +596,7 @@ class Parser:
         self.Params()
         self.icg.subroutine_call(syn)
         self.match(symbol.rparent)
-        return "_AX"
+        return "ax"
 
     def Params(self):
         """
