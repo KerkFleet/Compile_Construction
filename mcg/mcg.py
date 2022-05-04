@@ -104,6 +104,12 @@ class MachineCodeGenerator:
 
     def write_divide(self):
         tokens = self.line.split()
+        self.asmFile.writelines("       mov ax," + tokens[2] + "\n")
+        self.asmFile.writelines("       cwd" + "\n")
+        self.asmFile.writelines("       mov bx," + tokens[4] + "\n")
+        self.asmFile.writelines("       cwd" + "\n")
+        self.asmFile.writelines("       idiv bx\n")
+        self.asmFile.writelines("       mov " + tokens[0] + ",ax\n\n")
 
     def write_multiply(self):
         tokens = self.line.split()
